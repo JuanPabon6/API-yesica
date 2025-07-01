@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.utils import IntegrityError
 from .models import TiposDeEventos
 from .serializers import TiposDeEventosSerializers
-from api.exceptions import Duplicado
+from api.exceptions import Duplicado,ErrorInterno,ErrorDeParseo,MultiplesResultados,ValidacionInvalida,ObjetoNoExiste
 
 class TiposDeEventosViewSets(viewsets.ModelViewSet):
     queryset = TiposDeEventos.objects.all()
@@ -23,11 +23,11 @@ class TiposDeEventosViewSets(viewsets.ModelViewSet):
             serializer = self.get_serializer(tipos_eventos, many=True)
             return Response({'results':serializer.data}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['GET'])
     def get_tipos_de_eventos_by_id(self, request, pk=None):
@@ -36,13 +36,13 @@ class TiposDeEventosViewSets(viewsets.ModelViewSet):
             serializer = self.get_serializer(tipos_eventos, many=False)
             return Response({'results':serializer.data}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except MultipleObjectsReturned:
-            return Response({'error':'se han devuelto multiples objetos!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise MultiplesResultados()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=False, methods=['POST'])
     def create_tipos_de_eventos(self, request, pk=None):
@@ -53,13 +53,13 @@ class TiposDeEventosViewSets(viewsets.ModelViewSet):
             serializer.save()
             return Response({'results':'creado exitosamente!'}, status=status.HTTP_200_OK)
         except ParseError:
-            return Response({'error':'solicitud con data invalida!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorDeParseo()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except IntegrityError:
             raise Duplicado()
         except Exception as ex:
-            return Response({'error':str(ex)} , status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['DELETE'])
     def delete_tipos_de_eventos(self, request, pk=None):
@@ -68,11 +68,11 @@ class TiposDeEventosViewSets(viewsets.ModelViewSet):
             tipos_eventos.delete()
             return Response({'results':'borrado exitosamente!'}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['PUT'])
     def update_tipos_de_eventos(self, request, pk=None):
@@ -83,17 +83,17 @@ class TiposDeEventosViewSets(viewsets.ModelViewSet):
             serializer.save()
             return Response({'results':'actualizado con exito!'}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except ParseError:
-            return Response({'error':'solicitud con data incorrecta!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorDeParseo()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except MultipleObjectsReturned:
-            return Response({'error':'multiples objetos retornados!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise MultiplesResultados()
         except IntegrityError:
             raise Duplicado()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
             
 
 
