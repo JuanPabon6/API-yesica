@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.utils import IntegrityError
 from .models import Tematicas
 from .serializers import TematicasSerializer
-from api.exceptions import Duplicado
+from api.exceptions import Duplicado,ErrorDeParseo,ErrorInterno,MultiplesResultados,ValidacionInvalida,ObjetoNoExiste
 
 class TematicasViewSets(viewsets.ModelViewSet):
     queryset = Tematicas.objects.all()
@@ -23,11 +23,11 @@ class TematicasViewSets(viewsets.ModelViewSet):
             serializer = self.get_serializer(tematicas, many=True)
             return Response({'results':serializer.data}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['GET'])
     def get_tematicas_by_id(self, request, pk=None):
@@ -36,13 +36,13 @@ class TematicasViewSets(viewsets.ModelViewSet):
             serializer = self.get_serializer(tematicas, many=False)
             return Response({'results':serializer.data}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except MultipleObjectsReturned:
-            return Response({'error':'multiples objetos retornados!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise MultiplesResultados()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=False, methods=['POST'])
     def create_tematicas(self, request, pk=None):
@@ -53,13 +53,13 @@ class TematicasViewSets(viewsets.ModelViewSet):
             serializer.save()
             return Response({'results':'creado exitosamente!'}, status=status.HTTP_200_OK)
         except ParseError:
-            return Response({'error':'solicitud mal estructurada!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorDeParseo()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except IntegrityError:
             raise Duplicado()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['DELETE'])
     def delete_tematicas(self, request, pk=None):
@@ -68,13 +68,11 @@ class TematicasViewSets(viewsets.ModelViewSet):
             tematicas.delete()
             return Response({'results':'eliminado exitosamente!'}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
-        except ParseError:
-            return Response({'error':'peticion mal estructurada!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ObjetoNoExiste()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['PUT'])
     def update_tematicas(self, request, pk=None):
@@ -85,16 +83,16 @@ class TematicasViewSets(viewsets.ModelViewSet):
             serializer.save()
             return Response({'results':'actualizado correctamente!'}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except ParseError:
-            return Response({'error':'la solicitud es incorrecta!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorDeParseo()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except MultipleObjectsReturned:
-            return Response({'error':'multiples objetos devueltos!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise MultiplesResultados()
         except IntegrityError:
             raise Duplicado()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
 
 # Create your views here.
