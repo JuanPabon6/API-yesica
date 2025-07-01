@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError, ParseError
 from rest_framework.response import Response
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.utils import IntegrityError
-from api.exceptions import Duplicado, ErrorInterno, ObjetoNoExiste, ErrorDeParseo, ValidacionInvalida
+from api.exceptions import Duplicado, ErrorInterno, ObjetoNoExiste, ErrorDeParseo, ValidacionInvalida, MultiplesResultados
 from .models import Empleados 
 from .serializers import EmpleadosSerializers
 
@@ -23,11 +23,11 @@ class EmpleadosViewSets(viewsets.ModelViewSet):
             serializer = self.get_serializer(empleados, many=True)
             return Response({'results':serializer.data}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['GET'])
     def get_empleados_by_id(self, request, pk=None):
@@ -36,9 +36,11 @@ class EmpleadosViewSets(viewsets.ModelViewSet):
             serializer = self.get_serializer(empleados, many=False)
             return Response({'results':serializer.data}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'no se encontraron resultados!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except MultipleObjectsReturned:
-            return Response({'error':'multiples objetos devueltos!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise MultiplesResultados()
+        except ValidationError:
+            raise ValidacionInvalida()
         except Exception as ex:
             return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -51,13 +53,13 @@ class EmpleadosViewSets(viewsets.ModelViewSet):
             serializer.save()
             return Response({'results':'empleado creado!'}, status=status.HTTP_200_OK)
         except ParseError:
-            return Response({'error':'solicitud mal estructurada!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorDeParseo()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except IntegrityError:
             raise Duplicado()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['DELETE'])
     def delete_empleados(self, request, pk=None):
@@ -66,13 +68,13 @@ class EmpleadosViewSets(viewsets.ModelViewSet):
             empleados.delete()
             return Response({'results':'empleado eliminado!'}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'el empleado no existe!'}, status=status.HTTP_404_NOT_FOUND)
-        except ParseError:
-            return Response({'error':'solicitud mal formada!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ObjetoNoExiste()
+        except MultipleObjectsReturned:
+            raise MultiplesResultados()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except Exception as ex:
-            return Response({'error':str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorInterno(str(ex))
         
     @action(detail=True, methods=['PUT'])
     def update_empleados(self, request, pk=None):
@@ -83,11 +85,11 @@ class EmpleadosViewSets(viewsets.ModelViewSet):
             serializer.save()
             return Response({'results':'empleado actualizado!'}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({'error':'empleado no encontrado!'}, status=status.HTTP_404_NOT_FOUND)
+            raise ObjetoNoExiste()
         except ParseError:
-            return Response({'error':'solicitud mal formada!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorDeParseo()
         except ValidationError:
-            return Response({'error':'fallaron las validaciones!'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidacionInvalida()
         except IntegrityError:
             raise Duplicado()
         except Exception as ex:
