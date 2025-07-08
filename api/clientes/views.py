@@ -4,7 +4,8 @@ from django.db.utils import IntegrityError
 from rest_framework.decorators import action
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import ValidationError,ParseError
 from api.exceptions import Duplicado, ValidacionInvalida, ErrorDeParseo,ErrorInterno,ObjetoNoExiste, MultiplesResultados
 from .models import Clientes
@@ -13,8 +14,8 @@ from .serializers import ClientesSerializer
 class ClientesViewSets(viewsets.ModelViewSet):
     queryset = Clientes.objects.all()
     serializer_class = ClientesSerializer
-    authentication_classes = ()
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['GET'])
     def get_clientes(self, request, pk=None):

@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework.decorators import action
 from rest_framework import status,viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import ValidationError, ParseError
 from rest_framework.response import Response
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -12,8 +13,8 @@ from api.exceptions import ErrorDeParseo,ValidacionInvalida,MultiplesResultados,
 class DetallesVentasViewSets(viewsets.ModelViewSet):
     queryset = DetallesVentas.objects.all()
     serializer_class = DetallesVentasSerializers
-    authentication_classes = ()
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['GET'])
     def get_detalles_de_ventas(self, request, pk=None):

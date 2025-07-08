@@ -3,7 +3,8 @@ from rest_framework import viewsets,status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError,ValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.exceptions import ObjectDoesNotExist,MultipleObjectsReturned
 from .models import DetallesPagos
 from .serializers import DetallesPagosSerializers
@@ -12,8 +13,8 @@ from api.exceptions import ErrorDeParseo,ErrorInterno,MultiplesResultados,Valida
 class DetallePagosViewSets(viewsets.ModelViewSet):
     queryset = DetallesPagos.objects.all()
     serializer_class = DetallesPagosSerializers
-    authentication_classes = ()
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['GET'])
     def get_detalles_pagos(self, request, pk=None):

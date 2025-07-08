@@ -2,7 +2,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import ParseError,ValidationError
 from django.core.exceptions import ObjectDoesNotExist,MultipleObjectsReturned
 from django.db.utils import IntegrityError
@@ -13,8 +14,8 @@ from api.exceptions import ErrorDeParseo,ErrorInterno,MultiplesResultados,Duplic
 class FormasPagosViewSets(viewsets.ModelViewSet):
     queryset = FormasPagos.objects.all()
     serializer_class = FormasPagosSerializers
-    authentication_classes = ()
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['GET'])
     def get_formas_de_pagos(self, request, pk=None):

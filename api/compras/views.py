@@ -2,7 +2,8 @@ from django.shortcuts import render
 from rest_framework.decorators import action
 from rest_framework import viewsets,status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import ParseError,ValidationError
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from .models import Compras
@@ -12,8 +13,8 @@ from api.exceptions import ObjetoNoExiste, ErrorDeParseo,ErrorInterno,MultiplesR
 class ComprasViewSets(viewsets.ModelViewSet):
     queryset = Compras.objects.all()
     serializer_class = ComprasSerializers
-    authentication_classes = ()
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['GET'])
     def get_compras(self, request, pk=None):

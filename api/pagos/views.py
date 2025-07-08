@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError,ValidationError
 from django.core.exceptions import ObjectDoesNotExist,MultipleObjectsReturned
@@ -13,8 +14,8 @@ from api.exceptions import Duplicado,ErrorDeParseo,ErrorInterno,ValidacionInvali
 class PagosViewSets(viewsets.ModelViewSet):
     queryset = Pagos.objects.all()
     serializer_class = PagosSerializers
-    authentication_classes = ()
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['GET'])
     def get_pagos(self, request, pk=None):
